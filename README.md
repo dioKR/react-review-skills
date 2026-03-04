@@ -12,7 +12,9 @@ Single-skill repository for reviewing React/Next.js PRs with consistent quality 
 - `references/lint-tooling-map.md`
 - `assets/templates/pr-review-comment.md`
 - `assets/templates/pr-summary.md`
+- `assets/templates/project/workflows/react-review-command.yml`
 - `scripts/collect-pr-context.sh`
+- `scripts/install-into-project.sh`
 
 ## Prerequisite
 
@@ -56,3 +58,21 @@ bash scripts/install-skill.sh
 
 Use `react-review-claude <base-ref>`.  
 This is tool-agnostic and does not require installing into `~/.codex`.
+
+## Per-Project Setup
+
+This repository is a reusable pack.  
+If you want `/react-review` command in GitHub PR comments, install workflow into each target project:
+
+```bash
+bash scripts/install-into-project.sh /path/to/target-project
+```
+
+Then in the target project repository:
+
+1. Add Actions secret `OPENAI_API_KEY`
+2. Optional Actions variable `OPENAI_MODEL` (default: `gpt-5-mini`)
+3. Optional Actions variable `REACT_REVIEW_REQUIRE_BOT_PR=true` (only bot-authored PRs)
+4. Commit/push the workflow and run `/react-review` in PR comments
+
+See full guide: `docs/project-integration.md`.
