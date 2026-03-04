@@ -7,7 +7,7 @@ Use this repository as a React/Next.js PR review skill pack.
 Run from the project you want to review:
 
 ```bash
-~/.codex/skills/react-review-skills/scripts/review-local-claude.sh origin/main
+react-review-claude origin/main
 ```
 
 Paste the printed prompt into Claude Code.

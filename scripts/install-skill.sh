@@ -19,10 +19,9 @@ fi
 
 chmod +x "$TARGET_DIR"/scripts/*.sh 2>/dev/null || true
 
-echo "Installed: $TARGET_DIR"
+echo "Installed Codex skill: $TARGET_DIR"
 echo
 echo "Next steps:"
 echo "1) Move to a React/Next project (git repo)."
 echo "2) Codex:  $TARGET_DIR/scripts/review-local.sh origin/main"
-echo "3) Claude: $TARGET_DIR/scripts/review-local-claude.sh origin/main"
-echo "4) Paste the printed prompt into your agent."
+echo "3) For Claude/tool-agnostic setup, use scripts/install-cli.sh instead."

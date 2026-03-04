@@ -18,40 +18,39 @@ Single-skill repository for reviewing React/Next.js PRs with consistent quality 
 
 - Run this repository as a Git working tree (`git init` or cloned repo). `scripts/collect-pr-context.sh` requires Git history and refs.
 
-## Quick Start (Easier)
+## Quick Start (Tool-agnostic)
 
-1. Clone and install/update this skill:
+1. Clone and install commands:
 
 ```bash
 git clone https://github.com/dioKR/react-review-skills.git
 cd react-review-skills
-bash scripts/install-skill.sh
+bash scripts/install-cli.sh
 ```
 
-2. In the React/Next project you want to review, run one command:
+2. In the React/Next project you want to review:
 
+- Codex prompt helper
 ```bash
-~/.codex/skills/react-review-skills/scripts/review-local.sh origin/main
+react-review-codex origin/main
 ```
 
-For Claude Code:
-
+- Claude Code prompt helper
 ```bash
-~/.codex/skills/react-review-skills/scripts/review-local-claude.sh origin/main
+react-review-claude origin/main
 ```
 
 Then copy the printed prompt and paste it into your agent.
 
-## Codex Usage
+## Codex Skill Install (Optional)
 
-Use skill name: `$react-review-skills`
+If you want Codex native skill loading via `$react-review-skills`:
+
+```bash
+bash scripts/install-skill.sh
+```
 
 ## Claude Code Usage
 
-Use:
-
-```bash
-~/.codex/skills/react-review-skills/scripts/review-local-claude.sh <base-ref>
-```
-
-This prints a ready-to-paste prompt that points Claude Code to this pack's `CLAUDE.md`, `SKILL.md`, references, and templates.
+Use `react-review-claude <base-ref>`.  
+This is tool-agnostic and does not require installing into `~/.codex`.
