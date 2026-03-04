@@ -37,5 +37,8 @@ echo "Installed commands:"
 echo "- $BIN_DIR/react-review-codex"
 echo "- $BIN_DIR/react-review-claude"
 echo
+echo "Default base ref: current branch upstream (auto)."
+echo "You can override: react-review-codex <base-ref>"
+echo
 echo "If '$BIN_DIR' is not in PATH, add:"
 echo "export PATH=\"$BIN_DIR:\$PATH\""

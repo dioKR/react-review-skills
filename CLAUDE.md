@@ -7,10 +7,11 @@ Use this repository as a React/Next.js PR review skill pack.
 Run from the project you want to review:
 
 ```bash
-react-review-claude origin/main
+react-review-claude
 ```
 
 Paste the printed prompt into Claude Code.
+Default base ref is the current branch upstream.
 
 ## Source of Truth
 

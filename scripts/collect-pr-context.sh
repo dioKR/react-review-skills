@@ -1,11 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_REF="${1:-origin/main}"
+BASE_REF="${1:-}"
 
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   echo "Not inside a git repository." >&2
   exit 1
+fi
+
+if [[ -z "$BASE_REF" ]]; then
+  if git rev-parse --verify '@{upstream}' >/dev/null 2>&1; then
+    BASE_REF="$(git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}')"
+  else
+    BASE_REF="origin/main"
+  fi
 fi
 
 if git rev-parse --verify "$BASE_REF" >/dev/null 2>&1; then

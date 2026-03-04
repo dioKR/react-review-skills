@@ -32,15 +32,17 @@ bash scripts/install-cli.sh
 
 - Codex prompt helper
 ```bash
-react-review-codex origin/main
+react-review-codex
 ```
 
 - Claude Code prompt helper
 ```bash
-react-review-claude origin/main
+react-review-claude
 ```
 
 Then copy the printed prompt and paste it into your agent.
+Default base ref is auto-detected from the current branch upstream.  
+You can override with `react-review-codex <base-ref>` or `react-review-claude <base-ref>`.
 
 ## Codex Skill Install (Optional)
 

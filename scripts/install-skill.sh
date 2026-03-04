@@ -23,5 +23,6 @@ echo "Installed Codex skill: $TARGET_DIR"
 echo
 echo "Next steps:"
 echo "1) Move to a React/Next project (git repo)."
-echo "2) Codex:  $TARGET_DIR/scripts/review-local.sh origin/main"
+echo "2) Codex:  $TARGET_DIR/scripts/review-local.sh"
+echo "   (default base: current branch upstream)"
 echo "3) For Claude/tool-agnostic setup, use scripts/install-cli.sh instead."
