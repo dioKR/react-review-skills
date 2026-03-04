@@ -1,0 +1,4 @@
+interface:
+  display_name: "React Review Skills"
+  short_description: "Review React/Next PRs with clear quality gates"
+  default_prompt: "Use $react-review-skills to review this React/Next.js pull request and return severity-ranked findings with concrete fixes."
