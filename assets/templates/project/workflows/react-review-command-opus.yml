@@ -1,0 +1,160 @@
+name: React PR Review (Command, Opus)
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  review:
+    if: >-
+      github.event.issue.pull_request != null &&
+      startsWith(github.event.comment.body, '/react-review')
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL || 'claude-opus-4-1-20250805' }}
+      REQUIRE_BOT_PR: ${{ vars.REACT_REVIEW_REQUIRE_BOT_PR || 'false' }}
+    steps:
+      - name: Resolve PR metadata
+        id: meta
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.issue.number;
+            const pr = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+            core.setOutput('number', String(prNumber));
+            core.setOutput('base_ref', pr.data.base.ref);
+            core.setOutput('head_sha', pr.data.head.sha);
+            core.setOutput('author_type', pr.data.user?.type || 'Unknown');
+
+      - name: Gate by bot PR (optional)
+        id: gate
+        shell: bash
+        run: |
+          if [[ "${REQUIRE_BOT_PR}" == "true" && "${{ steps.meta.outputs.author_type }}" != "Bot" ]]; then
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Comment skipped reason
+        if: steps.gate.outputs.should_run != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issue_number = Number('${{ steps.meta.outputs.number }}');
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number,
+              body: 'Skipped: this command is configured for bot-authored PRs only.'
+            });
+
+      - name: Checkout PR head
+        if: steps.gate.outputs.should_run == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.meta.outputs.head_sha }}
+          fetch-depth: 0
+
+      - name: Fetch base branch
+        if: steps.gate.outputs.should_run == 'true'
+        shell: bash
+        run: git fetch origin "${{ steps.meta.outputs.base_ref }}" --depth=1
+
+      - name: Build review context
+        if: steps.gate.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          RANGE="origin/${{ steps.meta.outputs.base_ref }}...HEAD"
+          {
+            echo "# PR Review Request"
+            echo
+            echo "- PR: #${{ steps.meta.outputs.number }}"
+            echo "- Base: origin/${{ steps.meta.outputs.base_ref }}"
+            echo "- Trigger: ${{ github.event.comment.body }}"
+            echo
+            echo "## Changed Files"
+            git diff --name-status "$RANGE" || true
+            echo
+            echo "## Diff (truncated)"
+            git diff --no-color --unified=1 "$RANGE" | head -c 120000
+          } > pr-context.md
+
+      - name: Load review skill pack
+        if: steps.gate.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          git clone --depth=1 __SKILL_REPO__ /tmp/react-review-skills
+
+      - name: Generate AI review (Anthropic Opus)
+        if: steps.gate.outputs.should_run == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${ANTHROPIC_API_KEY:-}" ]]; then
+            echo "ANTHROPIC_API_KEY secret is required." >&2
+            exit 1
+          fi
+
+          {
+            echo "You are reviewing a React/Next.js PR.";
+            echo "Follow this skill file as source of truth:";
+            echo;
+            cat /tmp/react-review-skills/SKILL.md;
+            echo;
+            echo "Use these output templates:";
+            echo "- /tmp/react-review-skills/assets/templates/pr-review-comment.md";
+            echo "- /tmp/react-review-skills/assets/templates/pr-summary.md";
+            echo;
+            echo "Review context:";
+            cat pr-context.md;
+            echo;
+            echo "Return concise Korean output.";
+          } > prompt.txt
+
+          jq -n \
+            --arg model "$ANTHROPIC_MODEL" \
+            --rawfile prompt prompt.txt \
+            '{
+              model:$model,
+              max_tokens:4096,
+              messages:[{role:"user",content:[{type:"text",text:$prompt}]}]
+            }' \
+            > request.json
+
+          curl -sS https://api.anthropic.com/v1/messages \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "content-type: application/json" \
+            -d @request.json \
+            > response.json
+
+          jq -r '[.content[]? | select(.type=="text") | .text] | join("\n\n")' response.json > review.md
+
+          if [[ ! -s review.md ]]; then
+            echo "Failed to generate review." >&2
+            jq . response.json || true
+            exit 1
+          fi
+
+      - name: Post review comment
+        if: steps.gate.outputs.should_run == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('review.md', 'utf8').slice(0, 65000);
+            const { owner, repo } = context.repo;
+            const issue_number = Number('${{ steps.meta.outputs.number }}');
+            await github.rest.issues.createComment({ owner, repo, issue_number, body });

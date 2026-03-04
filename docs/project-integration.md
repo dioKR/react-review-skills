@@ -27,10 +27,16 @@ Install workflow into target project:
 bash scripts/install-into-project.sh /path/to/target-project
 ```
 
+Install Opus-default workflow:
+
+```bash
+bash scripts/install-into-project.sh /path/to/target-project https://github.com/dioKR/react-review-skills.git opus
+```
+
 Then in the target repository settings:
 
-1. Add secret `OPENAI_API_KEY`
-2. Optional variable `OPENAI_MODEL` (default `gpt-5-mini`)
+1. OpenAI workflow: add secret `OPENAI_API_KEY` and optional variable `OPENAI_MODEL`
+2. Opus workflow: add secret `ANTHROPIC_API_KEY` and optional variable `ANTHROPIC_MODEL` (default `claude-opus-4-1-20250805`)
 3. Optional variable `REACT_REVIEW_REQUIRE_BOT_PR=true` to only review bot-authored PRs
 
 Commit and push workflow in target project.

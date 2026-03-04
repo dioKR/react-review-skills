@@ -13,6 +13,7 @@ Single-skill repository for reviewing React/Next.js PRs with consistent quality 
 - `assets/templates/pr-review-comment.md`
 - `assets/templates/pr-summary.md`
 - `assets/templates/project/workflows/react-review-command.yml`
+- `assets/templates/project/workflows/react-review-command-opus.yml`
 - `scripts/collect-pr-context.sh`
 - `scripts/install-into-project.sh`
 
@@ -68,10 +69,16 @@ If you want `/react-review` command in GitHub PR comments, install workflow into
 bash scripts/install-into-project.sh /path/to/target-project
 ```
 
+Opus default model workflow:
+
+```bash
+bash scripts/install-into-project.sh /path/to/target-project https://github.com/dioKR/react-review-skills.git opus
+```
+
 Then in the target project repository:
 
-1. Add Actions secret `OPENAI_API_KEY`
-2. Optional Actions variable `OPENAI_MODEL` (default: `gpt-5-mini`)
+1. OpenAI workflow: secret `OPENAI_API_KEY`, optional variable `OPENAI_MODEL`
+2. Opus workflow: secret `ANTHROPIC_API_KEY`, optional variable `ANTHROPIC_MODEL` (default `claude-opus-4-1-20250805`)
 3. Optional Actions variable `REACT_REVIEW_REQUIRE_BOT_PR=true` (only bot-authored PRs)
 4. Commit/push the workflow and run `/react-review` in PR comments
 
