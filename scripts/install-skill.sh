@@ -23,5 +23,6 @@ echo "Installed: $TARGET_DIR"
 echo
 echo "Next steps:"
 echo "1) Move to a React/Next project (git repo)."
-echo "2) Run: $TARGET_DIR/scripts/review-local.sh origin/main"
-echo "3) Paste the printed prompt into Codex."
+echo "2) Codex:  $TARGET_DIR/scripts/review-local.sh origin/main"
+echo "3) Claude: $TARGET_DIR/scripts/review-local-claude.sh origin/main"
+echo "4) Paste the printed prompt into your agent."

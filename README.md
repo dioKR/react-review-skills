@@ -20,19 +20,27 @@ Single-skill repository for reviewing React/Next.js PRs with consistent quality 
 
 ## Quick Start (Easier)
 
-1. Install/update this skill to your local Codex skills folder:
+1. Clone and install/update this skill:
 
 ```bash
-bash /Users/yh/MyProject/react-review-skills/scripts/install-skill.sh
+git clone https://github.com/dioKR/react-review-skills.git
+cd react-review-skills
+bash scripts/install-skill.sh
 ```
 
-2. In the React/Next project you want to review, run:
+2. In the React/Next project you want to review, run one command:
 
 ```bash
 ~/.codex/skills/react-review-skills/scripts/review-local.sh origin/main
 ```
 
-Then copy the printed prompt and paste it into Codex.
+For Claude Code:
+
+```bash
+~/.codex/skills/react-review-skills/scripts/review-local-claude.sh origin/main
+```
+
+Then copy the printed prompt and paste it into your agent.
 
 ## Codex Usage
 
@@ -40,4 +48,10 @@ Use skill name: `$react-review-skills`
 
 ## Claude Code Usage
 
-Use `CLAUDE.md` in this repository root as the execution guide, and follow the same workflow and templates in this repository.
+Use:
+
+```bash
+~/.codex/skills/react-review-skills/scripts/review-local-claude.sh <base-ref>
+```
+
+This prints a ready-to-paste prompt that points Claude Code to this pack's `CLAUDE.md`, `SKILL.md`, references, and templates.
