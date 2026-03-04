@@ -18,6 +18,22 @@ Single-skill repository for reviewing React/Next.js PRs with consistent quality 
 
 - Run this repository as a Git working tree (`git init` or cloned repo). `scripts/collect-pr-context.sh` requires Git history and refs.
 
+## Quick Start (Easier)
+
+1. Install/update this skill to your local Codex skills folder:
+
+```bash
+bash /Users/yh/MyProject/react-review-skills/scripts/install-skill.sh
+```
+
+2. In the React/Next project you want to review, run:
+
+```bash
+~/.codex/skills/react-review-skills/scripts/review-local.sh origin/main
+```
+
+Then copy the printed prompt and paste it into Codex.
+
 ## Codex Usage
 
 Use skill name: `$react-review-skills`
