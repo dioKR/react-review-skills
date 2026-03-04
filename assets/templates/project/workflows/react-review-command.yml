@@ -16,10 +16,41 @@ jobs:
       startsWith(github.event.comment.body, '/react-review')
     runs-on: ubuntu-latest
     env:
-      OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-5-mini' }}
+      OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-4o-mini' }}
       REQUIRE_BOT_PR: ${{ vars.REACT_REVIEW_REQUIRE_BOT_PR || 'false' }}
+      ALLOWED_ASSOCIATIONS: ${{ vars.REACT_REVIEW_ALLOWED_ASSOCIATIONS || 'OWNER,MEMBER,COLLABORATOR' }}
     steps:
+      - name: Check commenter authorization
+        id: auth
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const association = context.payload.comment.author_association;
+            const allowed = process.env.ALLOWED_ASSOCIATIONS.split(',').map(s => s.trim());
+            const isAuthorized = allowed.includes(association);
+            core.setOutput('authorized', String(isAuthorized));
+            core.setOutput('association', association);
+            if (!isAuthorized) {
+              core.info(`Commenter association '${association}' not in allowed list: ${allowed.join(', ')}`);
+            }
+
+      - name: Skip unauthorized commenter
+        if: steps.auth.outputs.authorized != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: context.payload.issue.number,
+              body: `Skipped: commenter association '${process.env.ASSOCIATION}' is not authorized to trigger reviews.`
+            });
+        env:
+          ASSOCIATION: ${{ steps.auth.outputs.association }}
+
       - name: Resolve PR metadata
+        if: steps.auth.outputs.authorized == 'true'
         id: meta
         uses: actions/github-script@v7
         with:
@@ -33,6 +64,7 @@ jobs:
             core.setOutput('author_type', pr.data.user?.type || 'Unknown');
 
       - name: Gate by bot PR (optional)
+        if: steps.auth.outputs.authorized == 'true'
         id: gate
         shell: bash
         run: |
@@ -43,7 +75,7 @@ jobs:
           fi
 
       - name: Comment skipped reason
-        if: steps.gate.outputs.should_run != 'true'
+        if: steps.auth.outputs.authorized == 'true' && steps.gate.outputs.should_run != 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -57,19 +89,19 @@ jobs:
             });
 
       - name: Checkout PR head
-        if: steps.gate.outputs.should_run == 'true'
+        if: steps.auth.outputs.authorized == 'true' && steps.gate.outputs.should_run == 'true'
         uses: actions/checkout@v4
         with:
           ref: ${{ steps.meta.outputs.head_sha }}
           fetch-depth: 0
 
       - name: Fetch base branch
-        if: steps.gate.outputs.should_run == 'true'
+        if: steps.auth.outputs.authorized == 'true' && steps.gate.outputs.should_run == 'true'
         shell: bash
         run: git fetch origin "${{ steps.meta.outputs.base_ref }}" --depth=1
 
       - name: Build review context
-        if: steps.gate.outputs.should_run == 'true'
+        if: steps.auth.outputs.authorized == 'true' && steps.gate.outputs.should_run == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -89,13 +121,13 @@ jobs:
           } > pr-context.md
 
       - name: Load review skill pack
-        if: steps.gate.outputs.should_run == 'true'
+        if: steps.auth.outputs.authorized == 'true' && steps.gate.outputs.should_run == 'true'
         shell: bash
         run: |
           git clone --depth=1 __SKILL_REPO__ /tmp/react-review-skills
 
       - name: Generate AI review
-        if: steps.gate.outputs.should_run == 'true'
+        if: steps.auth.outputs.authorized == 'true' && steps.gate.outputs.should_run == 'true'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         shell: bash
@@ -126,16 +158,16 @@ jobs:
           jq -n \
             --arg model "$OPENAI_MODEL" \
             --rawfile prompt prompt.txt \
-            '{model:$model,input:[{role:"user",content:[{type:"input_text",text:$prompt}]}]}' \
+            '{model:$model,messages:[{role:"user",content:$prompt}],max_tokens:4096}' \
             > request.json
 
-          curl -sS https://api.openai.com/v1/responses \
+          curl -sS https://api.openai.com/v1/chat/completions \
             -H "Authorization: Bearer $OPENAI_API_KEY" \
             -H "Content-Type: application/json" \
             -d @request.json \
             > response.json
 
-          jq -r '.output_text // ""' response.json > review.md
+          jq -r '.choices[0].message.content // ""' response.json > review.md
 
           if [[ ! -s review.md ]]; then
             echo "Failed to generate review." >&2
@@ -144,7 +176,7 @@ jobs:
           fi
 
       - name: Post review comment
-        if: steps.gate.outputs.should_run == 'true'
+        if: steps.auth.outputs.authorized == 'true' && steps.gate.outputs.should_run == 'true'
         uses: actions/github-script@v7
         with:
           script: |
