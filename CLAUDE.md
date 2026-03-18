@@ -19,15 +19,18 @@ Default base ref is the current branch upstream.
 
 ## Required Review Flow
 
-1. Scope changed files and lint stack (ESLint/Biome).
-2. Review Vercel performance and architecture first.
-3. Review Toss code quality:
+1. Scope changed files, lint stack, and determine review strategy by diff size.
+2. Review project convention compliance.
+3. Review Vercel performance and architecture.
+4. Review Toss code quality:
    - Readability
    - Predictability
    - Cohesion
    - Coupling
-4. Review accessibility.
-5. Return severity-ranked findings with concrete fixes.
+5. Review accessibility.
+6. Review test coverage.
+7. Return severity-ranked findings with concrete fixes.
+8. Self-check all findings before submitting.
 
 ## References
 
@@ -35,6 +38,7 @@ Default base ref is the current branch upstream.
 - `references/toss-code-quality.md`
 - `references/a11y-pr-checklist.md`
 - `references/lint-tooling-map.md`
+- `references/common-findings.md`
 
 ## Output Templates
 
@@ -50,3 +54,9 @@ Default base ref is the current branch upstream.
 - `P0`: broken behavior, security/privacy, severe a11y blocker, or large performance regression
 - `P1`: significant maintainability/readability/perf risk
 - `P2`: improvement suggestions and local cleanups
+
+## Confidence
+
+- `high`: directly visible in diff, no ambiguity
+- `medium`: depends on surrounding context, likely a problem
+- `low`: speculative, needs runtime/domain verification — group separately, never assign P0
