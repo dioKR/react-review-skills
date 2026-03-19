@@ -1,7 +1,7 @@
 # [P?] <Short finding title>
 
 - File: `<path>:<line>`
-- Principle: `<performance|readability|predictability|cohesion|coupling|a11y>`
+- Principle: `<convention|performance|readability|predictability|cohesion|coupling|a11y|test>`
 - Evidence: `<what pattern is present in the current diff>`
 - Impact: `<user/dev impact>`
 - Suggested fix:
@@ -11,3 +11,4 @@
 ```
 
 - Confidence: `<high|medium|low>`
+- Common pattern: `<CF-XXX or N/A>`
