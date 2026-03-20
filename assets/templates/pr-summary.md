@@ -11,6 +11,16 @@
 - P1: <count>
 - P2: <count>
 
+### By Gate
+
+| Gate | P0 | P1 | P2 |
+|------|----|----|-----|
+| Convention | 0 | 0 | 0 |
+| Performance | 0 | 0 | 0 |
+| Code Quality | 0 | 0 | 0 |
+| Accessibility | 0 | 0 | 0 |
+| Test Coverage | 0 | 0 | 0 |
+
 ## Highest-Risk Items
 
 1. <item>
@@ -45,8 +55,8 @@
 
 > Copy this checklist to the implementation agent to ensure all findings are addressed.
 
-- [ ] #1 [P?] <finding title> — `<file:line>`
-- [ ] #2 [P?] <finding title> — `<file:line>`
+- [ ] #1 [P?][Gate] <finding title> — `<file:line>`
+- [ ] #2 [P?][Gate] <finding title> — `<file:line>`
 - [ ] ...
 
 Each item must be either:
